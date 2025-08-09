@@ -4,6 +4,10 @@ namespace ThisCouldBeBetter.WavFileViewer
 
 export class ByteConverter
 {
+	static BitsPerByte = 8;
+	static BitsPerByteTimesTwo = ByteConverter.BitsPerByte * 2;
+	static BitsPerByteTimesThree = ByteConverter.BitsPerByte * 3;
+
 	numberOfBits: number;
 	numberOfBytes: number;
 	maxValueSigned: number;
@@ -41,7 +45,7 @@ export class ByteConverter
 		for (var i = 0; i < numberOfBytes; i++)
 		{
 			var byte = bytes[numberOfBytes - i - 1];
-			returnValue |= byte << (i * Constants.BitsPerByte);
+			returnValue |= byte << (i * ByteConverter.BitsPerByte);
 		}
 
 		if (returnValue > this.maxValueSigned)
@@ -62,7 +66,7 @@ export class ByteConverter
 
 		for (var i = 0; i < numberOfBytes; i++)
 		{
-			returnValue |= bytes[i] << (i * Constants.BitsPerByte);
+			returnValue |= bytes[i] << (i * ByteConverter.BitsPerByte);
 		}
 
 		if (returnValue > this.maxValueSigned)
@@ -84,7 +88,7 @@ export class ByteConverter
 		for (var i = 0; i < numberOfBytes; i++)
 		{
 			var byte = bytes[numberOfBytes - i - 1];
-			returnValue |= byte << (i * Constants.BitsPerByte);
+			returnValue |= byte << (i * ByteConverter.BitsPerByte);
 		}
 
 		return returnValue;
@@ -100,7 +104,7 @@ export class ByteConverter
 
 		for (var i = 0; i < numberOfBytes; i++)
 		{
-			returnValue |= bytes[i] << (i * Constants.BitsPerByte);
+			returnValue |= bytes[i] << (i * ByteConverter.BitsPerByte);
 		}
 
 		return returnValue;
@@ -118,7 +122,7 @@ export class ByteConverter
 
 		for (var i = 0; i < this.numberOfBytes; i++)
 		{
-			var byteValue = (integer >> (Constants.BitsPerByte * i)) & 0xFF;
+			var byteValue = (integer >> (ByteConverter.BitsPerByte * i)) & 0xFF;
 			returnValues.splice(0, 0, byteValue);
 		}
 
@@ -132,7 +136,7 @@ export class ByteConverter
 
 		for (var i = 0; i < this.numberOfBytes; i++)
 		{
-			var byteValue = (integer >> (Constants.BitsPerByte * i)) & 0xFF;
+			var byteValue = (integer >> (ByteConverter.BitsPerByte * i)) & 0xFF;
 			returnValues.push(byteValue);
 		}
 

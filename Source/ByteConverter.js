@@ -23,7 +23,7 @@ var ThisCouldBeBetter;
                 var numberOfBytes = bytes.length;
                 for (var i = 0; i < numberOfBytes; i++) {
                     var byte = bytes[numberOfBytes - i - 1];
-                    returnValue |= byte << (i * WavFileViewer.Constants.BitsPerByte);
+                    returnValue |= byte << (i * ByteConverter.BitsPerByte);
                 }
                 if (returnValue > this.maxValueSigned) {
                     returnValue -= this.maxValueUnsigned;
@@ -35,7 +35,7 @@ var ThisCouldBeBetter;
                 var returnValue = 0;
                 var numberOfBytes = bytes.length;
                 for (var i = 0; i < numberOfBytes; i++) {
-                    returnValue |= bytes[i] << (i * WavFileViewer.Constants.BitsPerByte);
+                    returnValue |= bytes[i] << (i * ByteConverter.BitsPerByte);
                 }
                 if (returnValue > this.maxValueSigned) {
                     returnValue -= this.maxValueUnsigned;
@@ -48,7 +48,7 @@ var ThisCouldBeBetter;
                 var numberOfBytes = bytes.length;
                 for (var i = 0; i < numberOfBytes; i++) {
                     var byte = bytes[numberOfBytes - i - 1];
-                    returnValue |= byte << (i * WavFileViewer.Constants.BitsPerByte);
+                    returnValue |= byte << (i * ByteConverter.BitsPerByte);
                 }
                 return returnValue;
             }
@@ -57,7 +57,7 @@ var ThisCouldBeBetter;
                 var returnValue = 0;
                 var numberOfBytes = bytes.length;
                 for (var i = 0; i < numberOfBytes; i++) {
-                    returnValue |= bytes[i] << (i * WavFileViewer.Constants.BitsPerByte);
+                    returnValue |= bytes[i] << (i * ByteConverter.BitsPerByte);
                 }
                 return returnValue;
             }
@@ -68,7 +68,7 @@ var ThisCouldBeBetter;
                 // Big-endian.
                 var returnValues = new Array();
                 for (var i = 0; i < this.numberOfBytes; i++) {
-                    var byteValue = (integer >> (WavFileViewer.Constants.BitsPerByte * i)) & 0xFF;
+                    var byteValue = (integer >> (ByteConverter.BitsPerByte * i)) & 0xFF;
                     returnValues.splice(0, 0, byteValue);
                 }
                 return returnValues;
@@ -77,7 +77,7 @@ var ThisCouldBeBetter;
                 // Little-endian.
                 var returnValues = new Array();
                 for (var i = 0; i < this.numberOfBytes; i++) {
-                    var byteValue = (integer >> (WavFileViewer.Constants.BitsPerByte * i)) & 0xFF;
+                    var byteValue = (integer >> (ByteConverter.BitsPerByte * i)) & 0xFF;
                     returnValues.push(byteValue);
                 }
                 return returnValues;
@@ -87,6 +87,9 @@ var ThisCouldBeBetter;
                 return returnValue;
             }
         }
+        ByteConverter.BitsPerByte = 8;
+        ByteConverter.BitsPerByteTimesTwo = ByteConverter.BitsPerByte * 2;
+        ByteConverter.BitsPerByteTimesThree = ByteConverter.BitsPerByte * 3;
         WavFileViewer.ByteConverter = ByteConverter;
     })(WavFileViewer = ThisCouldBeBetter.WavFileViewer || (ThisCouldBeBetter.WavFileViewer = {}));
 })(ThisCouldBeBetter || (ThisCouldBeBetter = {}));

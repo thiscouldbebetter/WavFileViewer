@@ -223,7 +223,7 @@ export class WavFile //
 
 		var returnSamples = [];
 
-		var bytesPerSample = samplingInfo.bitsPerSample / Constants.BitsPerByte;
+		var bytesPerSample = samplingInfo.bitsPerSample / ByteConverter.BitsPerByte;
 
 		var samplesPerChannel =
 			numberOfBytes
@@ -331,7 +331,7 @@ export class WavFile //
 			this.samplingInfo.numberOfChannels
 			* this.samplesForChannels[0].length
 			* this.samplingInfo.bitsPerSample
-			/ Constants.BitsPerByte
+			/ ByteConverter.BitsPerByte
 			+ numberOfBytesOfOverhead;
 
 		writer.writeInt(numberOfBytesInFile);
@@ -372,7 +372,7 @@ export class WavFile //
 
 		var bitsPerSample = samplingInfo.bitsPerSample;
 
-		var bytesPerSample = bitsPerSample / Constants.BitsPerByte;
+		var bytesPerSample = bitsPerSample / ByteConverter.BitsPerByte;
 
 		// var numberOfBytes = numberOfChannels * samplesPerChannel * bytesPerSample;
 
@@ -589,7 +589,7 @@ export class WavFileSamplingInfo
 
 	bytesPerSample(): number
 	{
-		return this.bitsPerSample / Constants.BitsPerByte;
+		return this.bitsPerSample / ByteConverter.BitsPerByte;
 	}
 
 	bytesPerSampleForAllChannels(): number

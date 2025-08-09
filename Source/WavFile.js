@@ -116,7 +116,7 @@ var ThisCouldBeBetter;
                 var numberOfBytes = bytesToConvert.length;
                 var numberOfChannels = samplingInfo.numberOfChannels;
                 var returnSamples = [];
-                var bytesPerSample = samplingInfo.bitsPerSample / WavFileViewer.Constants.BitsPerByte;
+                var bytesPerSample = samplingInfo.bitsPerSample / WavFileViewer.ByteConverter.BitsPerByte;
                 var samplesPerChannel = numberOfBytes
                     / bytesPerSample
                     / numberOfChannels;
@@ -179,7 +179,7 @@ var ThisCouldBeBetter;
                 var numberOfBytesInFile = this.samplingInfo.numberOfChannels
                     * this.samplesForChannels[0].length
                     * this.samplingInfo.bitsPerSample
-                    / WavFileViewer.Constants.BitsPerByte
+                    / WavFileViewer.ByteConverter.BitsPerByte
                     + numberOfBytesOfOverhead;
                 writer.writeInt(numberOfBytesInFile);
                 writer.writeString("WAVE");
@@ -197,7 +197,7 @@ var ThisCouldBeBetter;
                 var numberOfChannels = samplingInfo.numberOfChannels;
                 var samplesPerChannel = samplesForChannelsToConvert[0].length;
                 var bitsPerSample = samplingInfo.bitsPerSample;
-                var bytesPerSample = bitsPerSample / WavFileViewer.Constants.BitsPerByte;
+                var bytesPerSample = bitsPerSample / WavFileViewer.ByteConverter.BitsPerByte;
                 // var numberOfBytes = numberOfChannels * samplesPerChannel * bytesPerSample;
                 returnBytes = [];
                 var b = 0;
@@ -319,7 +319,7 @@ var ThisCouldBeBetter;
                 return returnValue;
             }
             bytesPerSample() {
-                return this.bitsPerSample / WavFileViewer.Constants.BitsPerByte;
+                return this.bitsPerSample / WavFileViewer.ByteConverter.BitsPerByte;
             }
             bytesPerSampleForAllChannels() {
                 return this.bytesPerSample() * this.numberOfChannels;
