@@ -1,0 +1,58 @@
+<html>
+<body>
+
+<div id="divUi">
+
+	<h3>WAV File Viewer</h3>
+
+	<p>
+		Upload an audio file in .WAV format to see a rendering of its waveform.
+		A sample file is provided <a href="../Samples/Pluck.wav">here</a>.
+	</p>
+
+	<div>
+		<label for="inputFile">File:</label>
+		<input
+			id="inputFile"
+			type="file"
+			onchange="UiEventHandler.inputFile_Changed(this)"
+		></input>
+	</div>
+
+	<div>
+		<label for="divImage">Waveform Image:</label>
+		<br />
+		<label>Size in Pixels</label>
+		<input
+			id="inputImageSizeInPixelsX"
+			type="number"
+			min="1"
+			max="1920"
+			value="800"
+		></input>
+		<label>x</label>
+		<input
+			id="inputImageSizeInPixelsY"
+			type="number"
+			min="1"
+			max="1080"
+			value="200"
+		></input>
+		<div id="divImage">[none]</div>
+	</div>
+
+</div>
+
+<script type="text/javascript" src="UiEventHandler.js"></script>
+
+<script type="text/javascript" src="ByteConverter.js"></script>
+<script type="text/javascript" src="ByteStreamLittleEndian.js"></script>
+<script type="text/javascript" src="Constants.js"></script>
+<script type="text/javascript" src="Coords.js"></script>
+<script type="text/javascript" src="WavFile.js"></script>
+
+<script type="text/javascript" src="_Imports.js"></script>
+
+
+</body>
+</html>
