@@ -1,5 +1,8 @@
 
-class UiEventHandler
+namespace ThisCouldBeBetter.WavFileViewer
+{
+
+export class UiEventHandler
 {
 	static inputFile_Changed(inputFile: any): void
 	{
@@ -42,3 +45,7 @@ class UiEventHandler
 		}
 	}
 }
+
+}
+
+import UiEventHandler = ThisCouldBeBetter.WavFileViewer.UiEventHandler;
