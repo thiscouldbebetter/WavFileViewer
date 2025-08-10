@@ -1,5 +1,8 @@
 
-class UiEventHandler
+namespace ThisCouldBeBetter.WavFileViewer
+{
+
+export class UiEventHandler
 {
 	static soundLoaded: Sound;
 
@@ -59,3 +62,7 @@ class UiEventHandler
 		}
 	}
 }
+
+}
+
+import UiEventHandler = ThisCouldBeBetter.WavFileViewer.UiEventHandler;
