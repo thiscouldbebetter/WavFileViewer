@@ -295,6 +295,33 @@ var ThisCouldBeBetter;
                 g.stroke();
                 return canvas;
             }
+            domElementAudioCreateTheCallCallback(callback) {
+                var soundAsBytes = this.toBytes();
+                var soundAsStringBase64 = WavFileViewer.Base64Encoder.bytesToStringBase64(soundAsBytes);
+                var soundAsDataUri = "data:audio/wav;base64," + soundAsStringBase64;
+                var d = document;
+                var domElementSoundSource = d.createElement("source");
+                domElementSoundSource.src = soundAsDataUri;
+                var domElementAudio = d.createElement("audio");
+                domElementAudio.autoplay = true;
+                var wavFile = this;
+                domElementAudio.onended = () => {
+                    wavFile.domElementAudioRemove();
+                    if (callback != null) {
+                        callback();
+                    }
+                };
+                this.domElementAudio = domElementAudio;
+                domElementAudio.appendChild(domElementSoundSource);
+                d.body.appendChild(domElementAudio);
+                return this.domElementAudio;
+            }
+            domElementAudioRemove() {
+                if (this.domElementAudio != null) {
+                    this.domElementAudio.parentElement.removeChild(this.domElementAudio);
+                    this.domElementAudio = null;
+                }
+            }
         }
         // constants
         WavFile.NumberOfBytesInRiffWaveAndFormatChunks = 36;

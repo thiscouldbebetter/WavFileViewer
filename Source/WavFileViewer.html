@@ -3,10 +3,11 @@
 
 <div id="divUi">
 
-	<h3>WAV File Viewer</h3>
+	<h3>WAV File Viewer/Player</h3>
 
 	<p>
-		Upload an audio file in .WAV format to see a rendering of its waveform.
+		Upload an audio file in .WAV format to see a rendering of its waveform,
+		then click the Play button to hear the sound.
 		A sample file is provided <a href="../Samples/Pluck.wav">here</a>.
 	</p>
 
@@ -41,10 +42,17 @@
 		<div id="divImage">[none]</div>
 	</div>
 
+	<div>
+		<button onclick="UiEventHandler.buttonPlay_Clicked()">
+			Play
+		</button>
+	</div>
+
 </div>
 
 <script type="text/javascript" src="UiEventHandler.js"></script>
 
+<script type="text/javascript" src="Base64Encoder.js"></script>
 <script type="text/javascript" src="ByteConverter.js"></script>
 <script type="text/javascript" src="ByteStreamLittleEndian.js"></script>
 <script type="text/javascript" src="Coords.js"></script>

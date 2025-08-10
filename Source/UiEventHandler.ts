@@ -1,6 +1,20 @@
 
 class UiEventHandler
 {
+	static soundLoaded: Sound;
+
+	static buttonPlay_Clicked()
+	{
+		if (this.soundLoaded == null)
+		{
+			alert("No file loaded!");
+		}
+		else
+		{
+			this.soundLoaded.play();
+		}
+	}
+
 	static inputFile_Changed(inputFile: any): void
 	{
 		var file = inputFile.files[0];
@@ -15,7 +29,7 @@ class UiEventHandler
 						.split("")
 						.map( (x: string) => x.charCodeAt(0) );
 
-				var fileAsWavFile =
+				var wavFileLoaded =
 					WavFile.fromNameAndBytes(file.name, fileContentsAsBytes);
 
 				var d = document;
@@ -32,11 +46,14 @@ class UiEventHandler
 					Coords.fromXY(imageSizeInPixelsX, imageSizeInPixelsY);
 
 				var fileAsWaveformImage =
-					fileAsWavFile.toCanvasOfSizeInPixels(imageSizeInPixels);
+					wavFileLoaded.toCanvasOfSizeInPixels(imageSizeInPixels);
 
 				var divImage = d.getElementById("divImage");
 				divImage.innerHTML = "";
 				divImage.appendChild(fileAsWaveformImage);
+
+				UiEventHandler.soundLoaded =
+					SoundFromWavFile.fromWavFile(wavFileLoaded);
 			}
 			fileReader.readAsBinaryString(file);
 		}
