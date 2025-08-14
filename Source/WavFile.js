@@ -20,6 +20,10 @@ var ThisCouldBeBetter;
                         this.samplesForChannels[c] = [];
                     }
                 }
+                this.byteConverter = new ByteConverter();
+            }
+            static fromName(name) {
+                return new WavFile(name, null, null);
             }
             // static methods
             appendClipFromWavFileBetweenTimesStartAndEnd(wavFileToClipFrom, timeStartInSeconds, timeEndInSeconds) {
@@ -81,20 +85,21 @@ var ThisCouldBeBetter;
             // bytes
             // read
             static fromNameAndBytes(name, bytes) {
-                var returnValue = new WavFile(name, null, null);
-                var reader = new WavFileViewer.ByteStreamLittleEndian(bytes);
+                var returnValue = WavFile.fromName(name);
+                var reader = ByteStream.fromBytes(bytes);
                 returnValue.fromBytes_Chunks(reader);
                 return returnValue;
             }
             fromBytes_Chunks(reader) {
+                var converter = this.byteConverter;
                 // var riffStringAsBytes = 
                 reader.readBytes(4);
                 // var numberOfBytesInFile =
-                reader.readInt();
+                reader.readBytes(4);
                 // var waveStringAsBytes =
                 reader.readBytes(4);
-                while (reader.hasMoreBytes() == true) {
-                    var chunkTypeAsString = reader.readString(4);
+                while (reader.hasMoreBytes()) {
+                    var chunkTypeAsString = converter.bytesToString(reader.readBytes(4));
                     if (chunkTypeAsString == "data") {
                         this.fromBytes_Chunks_Data(reader);
                     }
@@ -107,7 +112,8 @@ var ThisCouldBeBetter;
                 }
             }
             fromBytes_Chunks_Data(reader) {
-                var subchunk2SizeInBytes = reader.readInt();
+                var converter = this.byteConverter;
+                var subchunk2SizeInBytes = converter.bytesToIntegerUnsignedLE(reader.readBytes(4));
                 var samplesForChannelsMixedAsBytes = reader.readBytes(subchunk2SizeInBytes);
                 var samplesForChannels = this.fromBytes_Chunks_Data_SamplesForChannels(this.samplingInfo, samplesForChannelsMixedAsBytes);
                 this.samplesForChannels = samplesForChannels;
@@ -116,7 +122,7 @@ var ThisCouldBeBetter;
                 var numberOfBytes = bytesToConvert.length;
                 var numberOfChannels = samplingInfo.numberOfChannels;
                 var returnSamples = [];
-                var bytesPerSample = samplingInfo.bitsPerSample / WavFileViewer.ByteConverter.BitsPerByte;
+                var bytesPerSample = samplingInfo.bitsPerSample / ByteConverter.BitsPerByte;
                 var samplesPerChannel = numberOfBytes
                     / bytesPerSample
                     / numberOfChannels;
@@ -124,7 +130,7 @@ var ThisCouldBeBetter;
                     returnSamples[c] = [];
                 }
                 var b = 0;
-                var byteConverter = new WavFileViewer.ByteConverter(samplingInfo.bitsPerSample);
+                var byteConverter = this.byteConverter;
                 var sampleValueAsBytes = [];
                 for (var s = 0; s < samplesPerChannel; s++) {
                     for (var c = 0; c < numberOfChannels; c++) {
@@ -140,15 +146,16 @@ var ThisCouldBeBetter;
                 return returnSamples;
             }
             fromBytes_Chunks_Format(reader) {
-                var chunkSizeInBytes = reader.readInt();
-                var formatCode = reader.readShort();
-                var numberOfChannels = reader.readShort();
-                var samplesPerSecond = reader.readInt();
+                var converter = this.byteConverter;
+                var chunkSizeInBytes = converter.bytesToIntegerUnsignedLE(reader.readBytes(4));
+                var formatCode = converter.bytesToIntegerUnsignedLE(reader.readBytes(2));
+                var numberOfChannels = converter.bytesToIntegerUnsignedLE(reader.readBytes(2));
+                var samplesPerSecond = converter.bytesToIntegerUnsignedLE(reader.readBytes(4));
                 // var bytesPerSecond =
-                reader.readInt(); // samplesPerSecond * numberOfChannels * bitsPerSample / 8
+                reader.readBytes(4); // samplesPerSecond * numberOfChannels * bitsPerSample / 8
                 // var bytesPerSampleForAllChannels =
-                reader.readShort(); // numberOfChannels * bitsPerSample / 8
-                var bitsPerSample = reader.readShort();
+                reader.readBytes(2); // numberOfChannels * bitsPerSample / 8
+                var bitsPerSample = converter.bytesToIntegerUnsignedLE(reader.readBytes(2));
                 var numberOfBytesInChunkSoFar = WavFileSamplingInfo.ChunkSizeInBytesMin;
                 var numberOfExtraBytesInChunk = chunkSizeInBytes
                     - numberOfBytesInChunkSoFar;
@@ -157,18 +164,20 @@ var ThisCouldBeBetter;
                 this.samplingInfo = samplingInfo;
             }
             fromBytes_Chunks_Unrecognized(reader) {
-                var chunkDataSizeInBytes = reader.readInt();
+                var converter = this.byteConverter;
+                var chunkDataSizeInBytes = converter.bytesToIntegerUnsignedLE(reader.readBytes(4));
                 // var chunkData =
                 reader.readBytes(chunkDataSizeInBytes);
             }
             // write
             toBytes() {
-                var writer = new WavFileViewer.ByteStreamLittleEndian([]);
+                var writer = new ByteStream([]);
                 this.toBytes_Chunks(writer);
                 return writer.bytes;
             }
             toBytes_Chunks(writer) {
-                writer.writeString("RIFF");
+                var converter = this.byteConverter;
+                writer.writeBytes(converter.stringToBytes("RIFF"));
                 // hack
                 var numberOfBytesOfOverhead = "RIFF".length
                     + "WAVE".length
@@ -179,17 +188,18 @@ var ThisCouldBeBetter;
                 var numberOfBytesInFile = this.samplingInfo.numberOfChannels
                     * this.samplesForChannels[0].length
                     * this.samplingInfo.bitsPerSample
-                    / WavFileViewer.ByteConverter.BitsPerByte
+                    / ByteConverter.BitsPerByte
                     + numberOfBytesOfOverhead;
-                writer.writeInt(numberOfBytesInFile);
-                writer.writeString("WAVE");
+                writer.writeBytes(converter.integerUnsigned32BitToBytesLE(numberOfBytesInFile));
+                writer.writeBytes(converter.stringToBytes("WAVE"));
                 this.toBytes_Chunks_Format(writer);
                 this.toBytes_Chunks_Data(writer);
             }
             toBytes_Chunks_Data(writer) {
-                writer.writeString("data");
+                var converter = this.byteConverter;
+                writer.writeBytes(converter.stringToBytes("data"));
                 var samplesForChannelsMixedAsBytes = this.toBytes_Chunks_Data_SamplesForChannels(this.samplesForChannels, this.samplingInfo);
-                writer.writeInt(samplesForChannelsMixedAsBytes.length);
+                writer.writeBytes(converter.integerUnsigned32BitToBytesLE(samplesForChannelsMixedAsBytes.length));
                 writer.writeBytes(samplesForChannelsMixedAsBytes);
             }
             toBytes_Chunks_Data_SamplesForChannels(samplesForChannelsToConvert, samplingInfo) {
@@ -197,15 +207,15 @@ var ThisCouldBeBetter;
                 var numberOfChannels = samplingInfo.numberOfChannels;
                 var samplesPerChannel = samplesForChannelsToConvert[0].length;
                 var bitsPerSample = samplingInfo.bitsPerSample;
-                var bytesPerSample = bitsPerSample / WavFileViewer.ByteConverter.BitsPerByte;
+                var bytesPerSample = bitsPerSample / ByteConverter.BitsPerByte;
                 // var numberOfBytes = numberOfChannels * samplesPerChannel * bytesPerSample;
                 returnBytes = [];
                 var b = 0;
-                var byteConverter = new WavFileViewer.ByteConverter(bitsPerSample);
+                var byteConverter = this.byteConverter;
                 for (var s = 0; s < samplesPerChannel; s++) {
                     for (var c = 0; c < numberOfChannels; c++) {
                         var sampleAsInteger = samplesForChannelsToConvert[c][s];
-                        var sampleAsBytes = byteConverter.integerToBytesLE(sampleAsInteger);
+                        var sampleAsBytes = byteConverter.integerUnsignedToBytesLE(sampleAsInteger, bitsPerSample);
                         for (var i = 0; i < bytesPerSample; i++) {
                             returnBytes[b] = sampleAsBytes[i];
                             b++;
@@ -215,27 +225,29 @@ var ThisCouldBeBetter;
                 return returnBytes;
             }
             toBytes_Chunks_Format(writer) {
-                writer.writeString("fmt ");
-                writer.writeInt(this.samplingInfo.chunkSizeInBytes());
-                writer.writeShort(this.samplingInfo.formatCode);
-                writer.writeShort(this.samplingInfo.numberOfChannels);
-                writer.writeInt(this.samplingInfo.samplesPerSecond);
-                writer.writeInt(this.samplingInfo.bytesPerSecond());
-                writer.writeShort(this.samplingInfo.bytesPerSampleForAllChannels());
-                writer.writeShort(this.samplingInfo.bitsPerSample);
-                if (this.samplingInfo.extraBytes != null) {
-                    writer.writeBytes(this.samplingInfo.extraBytes);
+                var converter = this.byteConverter;
+                writer.writeBytes(converter.stringToBytes("fmt "));
+                var samplingInfo = this.samplingInfo;
+                writer.writeBytes(converter.integerUnsigned32BitToBytesLE(samplingInfo.chunkSizeInBytes()));
+                writer.writeBytes(converter.integerUnsigned16BitToBytesLE(samplingInfo.formatCode));
+                writer.writeBytes(converter.integerUnsigned16BitToBytesLE(samplingInfo.numberOfChannels));
+                writer.writeBytes(converter.integerUnsigned32BitToBytesLE(samplingInfo.samplesPerSecond));
+                writer.writeBytes(converter.integerUnsigned32BitToBytesLE(samplingInfo.bytesPerSecond()));
+                writer.writeBytes(converter.integerUnsigned16BitToBytesLE(samplingInfo.bytesPerSampleForAllChannels()));
+                writer.writeBytes(converter.integerUnsigned16BitToBytesLE(samplingInfo.bitsPerSample));
+                if (samplingInfo.extraBytes != null) {
+                    writer.writeBytes(samplingInfo.extraBytes);
                 }
             }
             // JSON and Serialization.
             compressForSerialization() {
                 var samplesForChannelsAsBytes = this.toBytes_Chunks_Data_SamplesForChannels(this.samplesForChannels, this.samplingInfo);
-                var samplesForChannelsAsBase64 = WavFileViewer.Base64Encoder.bytesToStringBase64(samplesForChannelsAsBytes);
+                var samplesForChannelsAsBase64 = Base64Encoder.bytesToStringBase64(samplesForChannelsAsBytes);
                 this.samplesForChannels = samplesForChannelsAsBase64;
             }
             decompressAfterDeserialization() {
                 var samplesForChannelsAsBase64 = this.samplesForChannels;
-                var samplesForChannelsAsBytes = WavFileViewer.Base64Encoder.stringBase64ToBytes(samplesForChannelsAsBase64);
+                var samplesForChannelsAsBytes = Base64Encoder.stringBase64ToBytes(samplesForChannelsAsBase64);
                 var samplesForChannels = this.fromBytes_Chunks_Data_SamplesForChannels(this.samplingInfo, samplesForChannelsAsBytes);
                 this.samplesForChannels = samplesForChannels;
             }
@@ -297,7 +309,7 @@ var ThisCouldBeBetter;
             }
             domElementAudioCreateTheCallCallback(callback) {
                 var soundAsBytes = this.toBytes();
-                var soundAsStringBase64 = WavFileViewer.Base64Encoder.bytesToStringBase64(soundAsBytes);
+                var soundAsStringBase64 = Base64Encoder.bytesToStringBase64(soundAsBytes);
                 var soundAsDataUri = "data:audio/wav;base64," + soundAsStringBase64;
                 var d = document;
                 var domElementSoundSource = d.createElement("source");
@@ -346,7 +358,7 @@ var ThisCouldBeBetter;
                 return returnValue;
             }
             bytesPerSample() {
-                return this.bitsPerSample / WavFileViewer.ByteConverter.BitsPerByte;
+                return this.bitsPerSample / ByteConverter.BitsPerByte;
             }
             bytesPerSampleForAllChannels() {
                 return this.bytesPerSample() * this.numberOfChannels;

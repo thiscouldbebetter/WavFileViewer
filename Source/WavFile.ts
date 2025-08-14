@@ -8,6 +8,8 @@ export class WavFile //
 	samplingInfo: WavFileSamplingInfo;
 	samplesForChannels: any; // number[][];
 
+	byteConverter: ByteConverter;
+
 	constructor
 	(
 		filePath: string,
@@ -35,6 +37,13 @@ export class WavFile //
 				this.samplesForChannels[c] = [];
 			}
 		}
+
+		this.byteConverter = new ByteConverter();
+	}
+
+	static fromName(name: string): WavFile
+	{
+		return new WavFile(name, null, null);
 	}
 
 	// constants
@@ -160,26 +169,28 @@ export class WavFile //
 
 	static fromNameAndBytes(name: string, bytes: number[]): WavFile
 	{
-		var returnValue = new WavFile(name, null, null);
-		var reader = new ByteStreamLittleEndian(bytes);
+		var returnValue = WavFile.fromName(name);
+		var reader = ByteStream.fromBytes(bytes);
 		returnValue.fromBytes_Chunks(reader);
 		return returnValue;
 	}
 
-	fromBytes_Chunks(reader: ByteStreamLittleEndian): void
+	fromBytes_Chunks(reader: ByteStream): void
 	{
+		var converter = this.byteConverter;
+
 		// var riffStringAsBytes = 
 		reader.readBytes(4);
 
 		// var numberOfBytesInFile =
-		reader.readInt();
+		reader.readBytes(4);
 
 		// var waveStringAsBytes =
 		reader.readBytes(4);
 
-		while (reader.hasMoreBytes() == true)
+		while (reader.hasMoreBytes() )
 		{
-			var chunkTypeAsString = reader.readString(4);
+			var chunkTypeAsString = converter.bytesToString(reader.readBytes(4) );
 
 			if (chunkTypeAsString == "data")
 			{
@@ -196,9 +207,11 @@ export class WavFile //
 		}
 	}
 
-	fromBytes_Chunks_Data(reader: ByteStreamLittleEndian): void
+	fromBytes_Chunks_Data(reader: ByteStream): void
 	{
-		var subchunk2SizeInBytes = reader.readInt();
+		var converter = this.byteConverter;
+
+		var subchunk2SizeInBytes = converter.bytesToIntegerUnsignedLE(reader.readBytes(4) );
 
 		var samplesForChannelsMixedAsBytes = reader.readBytes(subchunk2SizeInBytes);
 
@@ -237,7 +250,7 @@ export class WavFile //
 
 		var b = 0;
 
-		var byteConverter = new ByteConverter(samplingInfo.bitsPerSample);
+		var byteConverter = this.byteConverter;
 		var sampleValueAsBytes = [];
 
 		for (var s = 0; s < samplesPerChannel; s++)
@@ -264,19 +277,21 @@ export class WavFile //
 		return returnSamples;
 	}
 
-	fromBytes_Chunks_Format(reader: ByteStreamLittleEndian): void
+	fromBytes_Chunks_Format(reader: ByteStream): void
 	{
-		var chunkSizeInBytes = reader.readInt();
-		var formatCode = reader.readShort();
+		var converter = this.byteConverter;
 
-		var numberOfChannels = reader.readShort();
-		var samplesPerSecond = reader.readInt();
+		var chunkSizeInBytes = converter.bytesToIntegerUnsignedLE(reader.readBytes(4) );
+		var formatCode = converter.bytesToIntegerUnsignedLE(reader.readBytes(2) );
+
+		var numberOfChannels = converter.bytesToIntegerUnsignedLE(reader.readBytes(2) );
+		var samplesPerSecond = converter.bytesToIntegerUnsignedLE(reader.readBytes(4) );
 
 		// var bytesPerSecond =
-		reader.readInt(); // samplesPerSecond * numberOfChannels * bitsPerSample / 8
+		reader.readBytes(4); // samplesPerSecond * numberOfChannels * bitsPerSample / 8
 		// var bytesPerSampleForAllChannels =
-		reader.readShort(); // numberOfChannels * bitsPerSample / 8
-		var bitsPerSample = reader.readShort();
+		reader.readBytes(2); // numberOfChannels * bitsPerSample / 8
+		var bitsPerSample = converter.bytesToIntegerUnsignedLE(reader.readBytes(2) );
 
 		var numberOfBytesInChunkSoFar = WavFileSamplingInfo.ChunkSizeInBytesMin;
 		var numberOfExtraBytesInChunk =
@@ -297,9 +312,11 @@ export class WavFile //
 		this.samplingInfo = samplingInfo;
 	}
 
-	fromBytes_Chunks_Unrecognized(reader: ByteStreamLittleEndian): void
+	fromBytes_Chunks_Unrecognized(reader: ByteStream): void
 	{
-		var chunkDataSizeInBytes = reader.readInt();
+		var converter = this.byteConverter;
+
+		var chunkDataSizeInBytes = converter.bytesToIntegerUnsignedLE(reader.readBytes(4) );
 		// var chunkData =
 		reader.readBytes(chunkDataSizeInBytes);
 	}
@@ -308,14 +325,16 @@ export class WavFile //
 
 	toBytes(): number[]
 	{
-		var writer = new ByteStreamLittleEndian([]);
+		var writer = new ByteStream([]);
 		this.toBytes_Chunks(writer);
 		return writer.bytes;
 	}
 
-	toBytes_Chunks(writer: ByteStreamLittleEndian): void
+	toBytes_Chunks(writer: ByteStream): void
 	{
-		writer.writeString("RIFF");
+		var converter = this.byteConverter;
+
+		writer.writeBytes(converter.stringToBytes("RIFF") );
 
 		// hack
 		var numberOfBytesOfOverhead =
@@ -334,17 +353,19 @@ export class WavFile //
 			/ ByteConverter.BitsPerByte
 			+ numberOfBytesOfOverhead;
 
-		writer.writeInt(numberOfBytesInFile);
+		writer.writeBytes(converter.integerUnsigned32BitToBytesLE(numberOfBytesInFile) );
 
-		writer.writeString("WAVE");
+		writer.writeBytes(converter.stringToBytes("WAVE") );
 
 		this.toBytes_Chunks_Format(writer);
 		this.toBytes_Chunks_Data(writer);
 	}
 
-	toBytes_Chunks_Data(writer: ByteStreamLittleEndian): void
+	toBytes_Chunks_Data(writer: ByteStream): void
 	{
-		writer.writeString("data");
+		var converter = this.byteConverter;
+
+		writer.writeBytes(converter.stringToBytes("data") );
 
 		var samplesForChannelsMixedAsBytes =
 			this.toBytes_Chunks_Data_SamplesForChannels
@@ -353,7 +374,7 @@ export class WavFile //
 				this.samplingInfo
 			);
 
-		writer.writeInt(samplesForChannelsMixedAsBytes.length);
+		writer.writeBytes(converter.integerUnsigned32BitToBytesLE(samplesForChannelsMixedAsBytes.length) );
 
 		writer.writeBytes(samplesForChannelsMixedAsBytes);
 	}
@@ -380,7 +401,7 @@ export class WavFile //
 
 		var b = 0;
 
-		var byteConverter = new ByteConverter(bitsPerSample);
+		var byteConverter = this.byteConverter;
 
 		for (var s = 0; s < samplesPerChannel; s++)
 		{
@@ -388,9 +409,9 @@ export class WavFile //
 			{
 				var sampleAsInteger = samplesForChannelsToConvert[c][s];
 
-				var sampleAsBytes = byteConverter.integerToBytesLE
+				var sampleAsBytes = byteConverter.integerUnsignedToBytesLE
 				(
-					sampleAsInteger
+					sampleAsInteger, bitsPerSample
 				);
 
 				for (var i = 0; i < bytesPerSample; i++)
@@ -404,23 +425,27 @@ export class WavFile //
 		return returnBytes;
 	}
 
-	toBytes_Chunks_Format(writer: ByteStreamLittleEndian): void
+	toBytes_Chunks_Format(writer: ByteStream): void
 	{
-		writer.writeString("fmt ");
+		var converter = this.byteConverter;
 
-		writer.writeInt(this.samplingInfo.chunkSizeInBytes());
-		writer.writeShort(this.samplingInfo.formatCode);
+		writer.writeBytes(converter.stringToBytes("fmt ") );
 
-		writer.writeShort(this.samplingInfo.numberOfChannels);
-		writer.writeInt(this.samplingInfo.samplesPerSecond);
+		var samplingInfo = this.samplingInfo;
 
-		writer.writeInt(this.samplingInfo.bytesPerSecond());
-		writer.writeShort(this.samplingInfo.bytesPerSampleForAllChannels());
-		writer.writeShort(this.samplingInfo.bitsPerSample);
+		writer.writeBytes(converter.integerUnsigned32BitToBytesLE(samplingInfo.chunkSizeInBytes() ) );
+		writer.writeBytes(converter.integerUnsigned16BitToBytesLE(samplingInfo.formatCode ) );
 
-		if (this.samplingInfo.extraBytes != null)
+		writer.writeBytes(converter.integerUnsigned16BitToBytesLE(samplingInfo.numberOfChannels) );
+		writer.writeBytes(converter.integerUnsigned32BitToBytesLE(samplingInfo.samplesPerSecond) );
+
+		writer.writeBytes(converter.integerUnsigned32BitToBytesLE(samplingInfo.bytesPerSecond() ) );
+		writer.writeBytes(converter.integerUnsigned16BitToBytesLE(samplingInfo.bytesPerSampleForAllChannels() ) );
+		writer.writeBytes(converter.integerUnsigned16BitToBytesLE(samplingInfo.bitsPerSample) );
+
+		if (samplingInfo.extraBytes != null)
 		{
-			writer.writeBytes(this.samplingInfo.extraBytes);
+			writer.writeBytes(samplingInfo.extraBytes);
 		}
 	}
 

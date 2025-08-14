@@ -1,0 +1,3 @@
+[submodule "Source/BitHandling"]
+	path = Source/BitHandling
+	url = https://github.com/thiscouldbebetter/BitHandling
