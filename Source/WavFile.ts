@@ -46,6 +46,25 @@ export class WavFile //
 		return new WavFile(name, null, null);
 	}
 
+	static fromFilePathSamplingInfoAndSamplesForChannels
+	(
+		filePath: string,
+		samplingInfo: WavFileSamplingInfo,
+		samplesForChannels: number[][]
+	): WavFile
+	{
+		return new WavFile(filePath, samplingInfo, samplesForChannels);
+	}
+
+	static fromSamplingInfoAndSamplesForChannels
+	(
+		samplingInfo: WavFileSamplingInfo,
+		samplesForChannels: number[][]
+	): WavFile
+	{
+		return new WavFile(null, samplingInfo, samplesForChannels);
+	}
+
 	// constants
 
 	static NumberOfBytesInRiffWaveAndFormatChunks = 36;

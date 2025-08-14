@@ -25,6 +25,12 @@ var ThisCouldBeBetter;
             static fromName(name) {
                 return new WavFile(name, null, null);
             }
+            static fromFilePathSamplingInfoAndSamplesForChannels(filePath, samplingInfo, samplesForChannels) {
+                return new WavFile(filePath, samplingInfo, samplesForChannels);
+            }
+            static fromSamplingInfoAndSamplesForChannels(samplingInfo, samplesForChannels) {
+                return new WavFile(null, samplingInfo, samplesForChannels);
+            }
             // static methods
             appendClipFromWavFileBetweenTimesStartAndEnd(wavFileToClipFrom, timeStartInSeconds, timeEndInSeconds) {
                 var samplesPerSecond = wavFileToClipFrom.samplingInfo.samplesPerSecond;
