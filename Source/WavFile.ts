@@ -586,7 +586,7 @@ export class WavFile //
 
 	domElementAudio: any;
 
-	domElementAudioCreateTheCallCallback(callback: () => void): any
+	domElementAudioCreateThenCallCallback(callback: () => void): any
 	{
 		var soundAsBytes = this.toBytes();
 

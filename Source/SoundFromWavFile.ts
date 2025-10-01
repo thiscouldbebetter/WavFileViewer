@@ -45,7 +45,7 @@ export class SoundFromWavFile implements Sound
 
 	playThenCallCallback(callback: () => void): void
 	{
-		this.sourceWavFile.domElementAudioCreateTheCallCallback(callback);
+		this.sourceWavFile.domElementAudioCreateThenCallCallback(callback);
 	}
 
 	stop(): void

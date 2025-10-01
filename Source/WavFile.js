@@ -313,7 +313,7 @@ var ThisCouldBeBetter;
                 g.stroke();
                 return canvas;
             }
-            domElementAudioCreateTheCallCallback(callback) {
+            domElementAudioCreateThenCallCallback(callback) {
                 var soundAsBytes = this.toBytes();
                 var soundAsStringBase64 = Base64Encoder.bytesToStringBase64(soundAsBytes);
                 var soundAsDataUri = "data:audio/wav;base64," + soundAsStringBase64;

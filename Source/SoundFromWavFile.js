@@ -23,7 +23,7 @@ var ThisCouldBeBetter;
                 this.playThenCallCallback(null);
             }
             playThenCallCallback(callback) {
-                this.sourceWavFile.domElementAudioCreateTheCallCallback(callback);
+                this.sourceWavFile.domElementAudioCreateThenCallCallback(callback);
             }
             stop() {
                 this.sourceWavFile.domElementAudioRemove();
