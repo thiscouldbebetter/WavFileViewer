@@ -16,6 +16,9 @@ var ThisCouldBeBetter;
                 return new SoundFromWavFile("", wavFile, null);
             }
             // instance methods
+            domElement() {
+                return this.sourceWavFile.domElementAudioCreateThenCallCallback(() => { });
+            }
             durationInSeconds() {
                 return this.sourceWavFile.durationInSeconds();
             }

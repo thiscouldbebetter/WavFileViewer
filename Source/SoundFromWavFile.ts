@@ -33,6 +33,11 @@ export class SoundFromWavFile implements Sound
 
 	// instance methods
 
+	domElement()
+	{
+		return this.sourceWavFile.domElementAudioCreateThenCallCallback( () => {} );
+	}
+
 	durationInSeconds(): number
 	{
 		return this.sourceWavFile.durationInSeconds();

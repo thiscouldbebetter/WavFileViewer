@@ -2,6 +2,11 @@
 namespace ThisCouldBeBetter.WavFileViewer
 {
 
+import bh = ThisCouldBeBetter.BitHandling;
+import Base64Encoder = bh.Base64Encoder;
+import ByteConverter = bh.ByteConverter;
+import ByteStream = bh.ByteStream;
+
 export class WavFile //
 {
 	filePath: string;

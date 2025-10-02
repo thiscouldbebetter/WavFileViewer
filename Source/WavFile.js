@@ -3,6 +3,10 @@ var ThisCouldBeBetter;
 (function (ThisCouldBeBetter) {
     var WavFileViewer;
     (function (WavFileViewer) {
+        var bh = ThisCouldBeBetter.BitHandling;
+        var Base64Encoder = bh.Base64Encoder;
+        var ByteConverter = bh.ByteConverter;
+        var ByteStream = bh.ByteStream;
         class WavFile //
          {
             constructor(filePath, samplingInfo, samplesForChannels) {
